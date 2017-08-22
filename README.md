@@ -3,20 +3,52 @@
 # 2 => fs模块
 
 # 3 => 数据请求
+* GET
+* querystring
+* url
 
-# 4 =>
+# 4 => 数据请求
+* POST
+* ``req.on('data',function(data){
 
-# 5 =>
+    });
+    req.on('end',function(){
 
-# 6 =>
+    });``
 
-# 7 =>
+# 5 => 登录注册
 
-# 8 =>
+# 6 => 模块化
+> 系统模块
+* crypto
+* events
+* net
+* os
+* path
+* stream
+* timers
+* zlib
 
-# 9 =>
+# 7 => 自定义模块
+* require引入模块
+* exports
+* module
+* npm
+* publish
 
-# 10 =>
+# 8 => express
+* express
+* express-static
+
+# 9 => express
+* express
+* 中间件
+* body-parser
+* 链式操作
+* 自定义中间件
+
+# 10 => express
+* cookie
 
 # 11 =>
 
