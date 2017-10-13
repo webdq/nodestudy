@@ -9,13 +9,14 @@
 
 # 4 => 数据请求
 * POST
-*
-    req.on('data',function(data){
+```
+req.on('data',function(data){
 
-    });
-    req.on('end',function(){
+});
+req.on('end',function(){
 
-    });
+});
+```
 
 # 5 => 登录注册
 
@@ -57,17 +58,20 @@
 
 # 11 => 模板引擎
 * jade
-> jade.render('html');
-> jade.renderFile('./views/1.jade',{pretty: true});
-> script(src="a.js")
-> div(style="width:200px;height:200px;") aaa
-> div(style={width:"200px",height:"200px"}) aaa
-> div(class="aaa bbb") aaa
-> div(class=["aaa","bbb"]) aaa
+```
+    jade.render('html');
+    jade.renderFile('./views/1.jade',{pretty: true});
+    script(src="a.js")
+    div(style="width:200px;height:200px;") aaa
+    div(style={width:"200px",height:"200px"}) aaa
+    div(class="aaa bbb") aaa
+    div(class=["aaa","bbb"]) aaa
+```
 * ejs
 
 # 12 => 模板引擎
 * jade
+```
     script
         |window.onload=function(){
         |   var oBtn=document.getElementById('btn');
@@ -81,18 +85,22 @@
     body
         |aaa
     div 我的名字：#{name}
+```
 
 * ejs
 
 # 13 => 模板引擎
-*ejs
+* ejs
 
 # 14 => 文件上传
 * body.parse 解析post数据 application/x-www-form-urlencoded
 * multer 解析post文件 multipart/form-data
-> var obj = multer({dest:'./upload'});
-> app.use(obj.any());
+```
+    var obj = multer({dest:'./upload'});
+    app.use(obj.any());
+```
 * fs.rename 文件重命名
+```
     var newfilename = req.files[0].path+pathLib.parse(req.files[0].originalname).ext;
     fs.rename(req.files[0].path,newfilename,function(err){
         if(err){
@@ -101,17 +109,22 @@
             res.send('上传成功');
         }
     });
+```
 
 # 15 => express+consolidate
 * 设置模板渲染
-> app.set('view engine','html');
-> app.set('views','./views');
-> app.engine('html',consolidate.ejs);
-> res.render('1.ejs',{name:'aaa'});
+```
+    app.set('view engine','html');
+    app.set('views','./views');
+    app.engine('html',consolidate.ejs);
+    res.render('1.ejs',{name:'aaa'});
+```
 * 路由
-> var router = express.Router();
-> app.use('/user',router);
-> router.get('/1.html');
+```
+    var router = express.Router();
+    app.use('/user',router);
+    router.get('/1.html');
+```
 
 # 16 => 数据库
 * mysql
@@ -154,13 +167,146 @@
         src         头像      varchar(64)
 
 # 19 =>
+```
+    app.get('/',function(req,res){
+        db.query('SELECT * FROM banner_table',function(err,data){
+            if(err){
+                res.status(500).send('database error').end();
+            }else{
+                res.render('index.ejs',{banners: data});
+            }
+        });
+    });
+```
 
 # 20 =>
+```
+    app.get('/',function(req,res,next){
+        db.query('SELECT * FROM banner_table',function(err,data){
+            if(err){
+                res.status(500).send('database error').end();
+            }else{
+                res.banners = data;
+                next();
+            }
+        });
+    });
+    app.get('/',function(req,res,next){
+        db.query('SELECT ID,title,summary FROM article_table',function(err,data){
+            if(err){
+                res.status(500).send('database error').end();
+            }else{
+                res.articles = data;
+                next();
+            }
+        });
+    });
+    app.get('/',function(req,res){
+        res.render('index.ejs',{banners: res.banners, articles: res.articles});
+    });
+```
 
 # 21 =>
+```
+    app.get('/article',function(req,res){
+        if(req.query.id){
+            db.query(`SELECT * FROM article_table WHERE ID=${req.query.id}`,function(err,data){
+                if(err){
+                    res.status(500).send('数据有问题').end();
+                }else{
+                    if(data.length == 0){
+                        res.status(404).send('文章找不到').end();
+                    }else{
+                        var article = data[0];
+                        article.date = common.time2date(article.post_time);
+                        article.content = article.content.replace(/^/gm,'<p>').replace(/$/gm,'</p>');
+                        res.render('conText.ejs',{articleData: article});
+                    }
+                }
+            });
+        }else{
+            res.status(404).send('文章找不到').end();
+        }
+    });
+```
 
 # 22 =>
+```
+    app.get('/article',function(req,res){
+        if(req.query.id){
+            if(req.query.act == 'like'){
+                db.query(`UPDATE article_table SET n_like=n_like+1 WHERE ID=${req.query.id}`,function(err,data){
+                    if(err){
+                        res.status(500).send('数据有问题').end();
+                    }else{
+                        db.query(`SELECT * FROM article_table WHERE ID=${req.query.id}`,function(err,data){
+                            if(err){
+                                res.status(500).send('数据有问题').end();
+                            }else{
+                                if(data.length == 0){
+                                    res.status(404).send('文章找不到').end();
+                                }else{
+                                    var article = data[0];
+                                    article.date = common.time2date(article.post_time);
+                                    article.content = article.content.replace(/^/gm,'<p>').replace(/$/gm,'</p>');
+                                    res.render('conText.ejs',{articleData: article});
+                                }
+                            }
+                        });
+                    }
+                });
+            }else{
+                db.query(`SELECT * FROM article_table WHERE ID=${req.query.id}`,function(err,data){
+                    if(err){
+                        res.status(500).send('数据有问题').end();
+                    }else{
+                        if(data.length == 0){
+                            res.status(404).send('文章找不到').end();
+                        }else{
+                            var article = data[0];
+                            article.date = common.time2date(article.post_time);
+                            article.content = article.content.replace(/^/gm,'<p>').replace(/$/gm,'</p>');
+                            res.render('conText.ejs',{articleData: article});
+                        }
+                    }
+                });
+            }
+        }else{
+            res.status(404).send('文章找不到').end();
+        }
+    });
+```
 
-# 23 =>
+# 23 => 数据库
+* 删 DELETE
+> DELETE FROM 表 WHERE 条件
+
+* 增  INSERT
+> INSERT INTO 表 (字段列表) VALUES (值列表)
+
+* 改 UPDATE
+> UPDATE 表 SET 字段=值,字段=值... WHERE 条件
+
+* 查 SELECT
+> SELECT * FROM 表 WHERE 条件
+
+-----------------------------------------
+子句：
+WHERE 条件
+WHERE age<18
+WHERE age>=18
+WHERE age>=18 AND score<=60
+WHERE cach>100 OR score>=60
+
+ORDER 排序
+ORDER BY age ASC/DESC
+    ASC-升序
+    DESC-降序
+ORDER BY price ASC
+ORDER BY price ASC, sales DESC
+
+GROUP 聚类
+SELECT * FROM 表 GROUP BY 字段
+SELECT class,COUNT(class) FROM student_table GROUP BY class
 
 # 24 =>
